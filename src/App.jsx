@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Navbar from './components/Navbar'
 import Login from "./pages/Login"
+import Landing from "./pages/Landing"
 import './Web3Provider'
 import { Web3Provider } from "./Web3Provider"
 
@@ -14,6 +15,7 @@ function App() {
             <Navbar />
           </Web3Provider>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />}/>
           </Routes>
         </div>
