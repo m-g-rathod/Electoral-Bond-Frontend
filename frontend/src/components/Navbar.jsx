@@ -12,17 +12,21 @@ function Navbar() {
   const {isAuth, setIsAuth} = useContext(AuthContext);
   const chainId = useChainId();
 
+  const handleLogout = () => {
+    localStorage.removeItem('party');
+    localStorage.removeItem('auth');
+  }
 
   return (
     <div className="flex flex-col">
       <nav className="flex w-full px-6 py-3 justify-between shadow-md">
         <h1 className="font-medium sm:text-2xl text-lg">Electoral Bond</h1>
         <div className="sm:flex gap-4 hidden">
-          {isAuth && <ConnectButton />}
-          {!isAuth && <Link to="/login" className="px-3 py-2 bg-green-600 rounded-lg text-white font-medium cursor-pointer hover:no-underline">
+          {localStorage.getItem('auth') === 'true' && <ConnectButton />}
+          {localStorage.getItem('auth') !== 'true' && <Link to="/login" className="px-3 py-2 bg-green-600 rounded-lg text-white font-medium cursor-pointer hover:no-underline">
             Login
           </Link>}
-          {isAuth && <button onClick={() => setIsAuth(false)} className="px-3 py-2 bg-red-500 rounded-lg text-white font-medium cursor-pointer">
+          {localStorage.getItem('auth') === 'true' && <button onClick={() => handleLogout()} className="px-3 py-2 bg-red-500 rounded-lg text-white font-medium cursor-pointer">
             Logout
           </button>}
         </div>

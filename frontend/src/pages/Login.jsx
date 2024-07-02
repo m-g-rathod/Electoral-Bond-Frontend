@@ -1,16 +1,48 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-    const {isAuth, setIsAuth} = useContext(AuthContext);
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { isAuth, setIsAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setIsAuth(true);
-        navigate('/')
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const data = {
+      email: email,
+      password: password
     }
+
+    fetch('http://127.0.0.1:5000/api/party/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    }).then((res) => {
+      if (!res.ok) {
+        
+      }
+      return res.json();
+    })
+    .then((res) => {
+      console.log(res);
+      localStorage.setItem('party', res.partyName);
+      localStorage.setItem('auth', 'true');
+
+      const lastUrl = localStorage.getItem('lastUrl') || '/party/home';
+      localStorage.removeItem('lastUrl'); // Clear the stored URL
+      console.log(lastUrl);
+      navigate(lastUrl);
+
+      // console.log(data);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  };
 
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -21,10 +53,15 @@ export default function Login() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6" action="#" method="POST">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+          action="#"
+          method="POST"
+        >
           <div>
             <label
-              for="email"
+              htmlFor="email"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
               Email address
@@ -35,6 +72,8 @@ export default function Login() {
                 name="email"
                 type="email"
                 autocomplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="block border w-full rounded-md py-1.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6"
               />
@@ -44,7 +83,7 @@ export default function Login() {
           <div>
             <div className="flex items-center justify-between">
               <label
-                for="password"
+                htmlFor="password"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 Password
@@ -64,6 +103,8 @@ export default function Login() {
                 name="password"
                 type="password"
                 autocomplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="block w-full rounded-md border py-1.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6"
               />
@@ -79,7 +120,6 @@ export default function Login() {
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );
