@@ -29,8 +29,11 @@ export default function Login() {
     })
     .then((res) => {
       console.log(res);
+      const timestamp = new Date().getTime();
       localStorage.setItem('party', res.partyName);
       localStorage.setItem('auth', 'true');
+      localStorage.setItem('authTimestamp', timestamp);     
+      localStorage.setItem('partyId', res.partyId);
 
       const lastUrl = localStorage.getItem('lastUrl') || '/party/home';
       localStorage.removeItem('lastUrl'); // Clear the stored URL
