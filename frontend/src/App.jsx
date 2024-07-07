@@ -8,9 +8,13 @@ import { Web3Provider } from "./Web3Provider";
 import Home from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Donate from "./pages/Donate";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function App() {
-  const [selectedParty, setSelectedParty] = useState('');
+  const [selectedPartyId, setSelectedPartyId] = useState(0);
+  const [isBalance, setIsBalance] = useState(false);
 
   useEffect(() => {
     const isAuth = localStorage.getItem('auth') === 'true';
@@ -32,19 +36,18 @@ function App() {
     <>
       <Router>
         <div className="w-screen h-full">
-          <Web3Provider>
-            <Navbar />
-          </Web3Provider>
+            <Navbar setIsBalance={setIsBalance}/>
           <Routes>
-            <Route path="/" element={<Landing setSelectedParty={setSelectedParty}/>} />
+            <Route path="/" element={<Landing setSelectedPartyId={setSelectedPartyId}/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/party/*" element={<ProtectedRoute />}>
-              <Route path="home" element={<Home />} />
+              <Route path="home" element={<Home isBalance={isBalance} setIsBalance={setIsBalance}/>} />
             </Route>
 
-            <Route path="/donate/:partyId" element={<Donate selectedParty={selectedParty}/>} />
+            <Route path="/donate/:partyName" element={<Donate selectedPartyId={selectedPartyId}/>} />
           </Routes>
         </div>
+        <ToastContainer />
       </Router>
     </>
   );

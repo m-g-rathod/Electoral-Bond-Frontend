@@ -8,7 +8,7 @@ import { contractAddresses, abi } from "../../constants";
 import { useNavigate } from "react-router-dom";
 // import { useMoralis } from "react-moralis";
 
-function Navbar() {
+function Navbar({setIsBalance}) {
   const [isClick, setIsClick] = useState(false);
   const isAuth = localStorage.getItem('auth') === 'true';
   const chainId = useChainId();
@@ -25,7 +25,11 @@ function Navbar() {
       <nav className="flex w-full px-10 py-3 justify-between shadow-md">
         <h1 className="font-medium sm:text-2xl text-lg">Decentralized Electoral Bond</h1>
         <div className="sm:flex gap-4 hidden">
-          {isAuth && <ConnectButton />}
+          <ConnectButton />
+          {
+            isAuth && 
+            <button onClick={() => setIsBalance(true)} className="px-3 py-2 bg-blue-800 rounded text-white font-medium cursor-pointer">Check Funds</button>
+          }
           {!isAuth && <Link to="/login" className="px-3 py-2 bg-green-600 rounded-lg text-white font-medium cursor-pointer hover:no-underline">
             Login
           </Link>}

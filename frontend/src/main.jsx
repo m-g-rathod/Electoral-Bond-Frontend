@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { ContextProvider } from './contexts/AuthContext.jsx'
+import { Web3Provider } from './Web3Provider.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-      <ContextProvider >
+      <Web3Provider >
           <App />
-      </ContextProvider>
+      </Web3Provider  >
   </React.StrictMode>,
 )

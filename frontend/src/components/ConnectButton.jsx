@@ -11,24 +11,24 @@ export const ConnectButton = () => {
   const {writeContract} = useWriteContract();
   const chainId = useChainId();
 
-  useEffect(() => {
-    console.log(account.address);
+  // useEffect(() => {
+  //   console.log(account.address);
 
-    if(account.address && temp) {
-      temp = false;
+  //   if(account.address && temp) {
+  //     temp = false;
 
-      writeContract({
-        abi,
-        address: contractAddresses[chainId][0],
-        functionName: 'mapAddress',
-        args: [
-          'BJP',
-          account.address
-        ]
-      })
-    }
+  //     writeContract({
+  //       abi,
+  //       address: contractAddresses[chainId][0],
+  //       functionName: 'mapAddress',
+  //       args: [
+  //         localStorage.getItem('party'),
+  //         account.address
+  //       ]
+  //     })
+  //   }
 
-  }, [account]);
+  // }, [account]);
 
   return (
     // <ConnectKitButton.Custom>

@@ -1,11 +1,9 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { isAuth, setIsAuth } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -30,7 +28,7 @@ export default function Login() {
     .then((res) => {
       console.log(res);
       const timestamp = new Date().getTime();
-      localStorage.setItem('party', res.partyName);
+      localStorage.setItem('party', res.partyName.toLowerCase());
       localStorage.setItem('auth', 'true');
       localStorage.setItem('authTimestamp', timestamp);     
       localStorage.setItem('partyId', res.partyId);
