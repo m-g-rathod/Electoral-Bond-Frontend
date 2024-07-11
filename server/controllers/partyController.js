@@ -62,7 +62,6 @@ const getPartyAdv = async (req, res) => {
                 return acc;
               }, []);
 
-              console.log(transformedArray);
             return res.status(200).json({result: transformedArray});
         })
         // console.log(queryRes);
@@ -89,7 +88,6 @@ const addPartyAdv = async (req, res) => {
                         existingCategory = true;
                         category_id = result[0].id;
                     }
-                    console.log('inside check');
                     resolve();
                 });
             });
@@ -99,7 +97,6 @@ const addPartyAdv = async (req, res) => {
             return new Promise((resolve, reject) => {
                 connection.query('INSERT INTO advcategory (partyId, categoryName) VALUES (?, ?)', [partyId, selectedOption], (err, result) => {
                     if (err) return reject(err);
-                    console.log('inside insert')
                     category_id = result.insertId;
                     resolve();
                 });
@@ -125,8 +122,20 @@ const addPartyAdv = async (req, res) => {
     }
 }
 
+const getPartyChannel = (req, res) => {
+    const {partyId} = req.params;
+    
+    connection.query('SELECT channelAddress FROM partychannel WHERE partyId = ?', [partyId], (err, result) => {
+        if(err)
+            console.log(err);
+
+        return res.status(200).json({result: result});
+    })
+}
+
 module.exports = {
     loginParty,
     getPartyAdv,
-    addPartyAdv
+    addPartyAdv,
+    getPartyChannel
 }

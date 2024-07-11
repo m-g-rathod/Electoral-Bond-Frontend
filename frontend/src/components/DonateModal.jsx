@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import { FaEthereum } from "react-icons/fa";
-import { useAccount, useWriteContract, useChainId } from "wagmi";
+import { useAccount, useWriteContract, useChainId, useWalletClient } from "wagmi";
 import { Bounce, toast } from "react-toastify";
 import { abi, contractAddresses } from "../../constants";
+import { ethers } from "ethers";
+import { PushAPI, CONSTANTS } from "@pushprotocol/restapi";
 
-export default function DonateModal({ setIsDonate, partyName }) {
+export default function DonateModal({ setIsDonate, partyName, partyChannel }) {
   const [amt, setAmt] = useState(0.0);
   const account = useAccount();
-  const {writeContract, status, isError, error} = useWriteContract();
+  const { writeContract, status, isError, error, writeContractAsync } = useWriteContract();
   const chainId = useChainId();
+  const {data: signer, refetch} = useWalletClient({
+    account: account.address
+  });
 
   const getParty = () => {
     if (partyName === "bjp") return "Bhartiya Janata Party";
@@ -17,40 +22,111 @@ export default function DonateModal({ setIsDonate, partyName }) {
   };
 
   useEffect(() => {
-    if(error !== null)
+    console.log(partyChannel)
+  }, []);
+
+  useEffect(() => {
+    if(account.address != undefined || account.address !== '0x0000000000000000000000000000000000000000')
     {
+      refetch();
+    }
+  }, [account]);
+
+  const getSubs = async () => {
+    try {
+      const user = await PushAPI.initialize(signer, {
+        env: CONSTANTS.ENV.STAGING,
+      });
+  
+      const subs = await user.notification.subscriptions();
+  
+      // console.log(subs);
+
+      return subs;      
+    } catch (error) {
+      throw new Error(error);
+    }
+
+  }
+
+  const subscribe = async () => {
+    try { 
+      const user = await PushAPI.initialize(signer, {
+        env: CONSTANTS.ENV.STAGING,
+      });
+
+      const response = await user.notification.subscribe('0x5d44f1412ED9B71f1FE8Dc32128d175Ed797E489')
+      console.log(response); 
+      
+    } catch (e) {
+      throw new Error(e);
+    }
+  };
+
+  const transfer = async () => {
+    try {
+
+      const subscriptions = await getSubs();
+      console.log(subscriptions)
+
+      const check = subscriptions.some(item => item.channel === partyChannel);
+
+      if(subscriptions.length === 0 || !check) {
+        await subscribe();
+      }
+
+      const weiAmount = ethers.parseEther(amt.toString());
+
+      const res = await writeContractAsync({
+        abi,
+        address: contractAddresses[chainId][0],
+        functionName: "transferBond",
+        args: [partyName, weiAmount],
+        value: weiAmount,
+      });
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+      setIsDonate(false);
+      toast.error(err.message, {
+        position: "top-right",
+        autoClose: 5000,
+        transition: Bounce,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (error !== null) {
       toast.error(error, {
         position: "top-right",
         autoClose: 5000,
-        transition: Bounce
-      })
+        transition: Bounce,
+      });
     }
   }, [error]);
 
   useEffect(() => {
-    if(status === 'pending')
-    {
-      toast.info(`Transferring amount to ${getParty()}. Please wait....`,
-        {
-          toastId: 'mapAddress',
-          position: "top-center",
-          autoClose: false,
-          transition: Bounce,
-        }
-      )
-    }
-    else if(status === 'success')
-    {
-      toast.dismiss('mapAddress')
+    if (status === "pending") {
+      toast.info(`Transferring amount to ${getParty()}. Please wait....`, {
+        toastId: "mapAddress",
+        position: "top-center",
+        autoClose: false,
+        transition: Bounce,
+      });
+    } else if (status === "success") {
+      toast.dismiss("mapAddress");
+      setAmt(0);
+      setIsDonate(false);
       toast.success(`Successfully transferred amount to ${getParty()}!!`, {
         position: "top-center",
         autoClose: 5000,
-        transition: Bounce
-      })
+        transition: Bounce,
+      });
     }
   }, [status]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (
       account.address === undefined ||
       account.address === "0x0000000000000000000000000000000000000000"
@@ -60,28 +136,15 @@ export default function DonateModal({ setIsDonate, partyName }) {
         autoClose: 5000,
         transition: Bounce,
       });
-    }
-    else {
-      if(amt === 0)
-      {
-        toast.error('You need to donate some non-zero amount', {
+    } else {
+      if (amt === 0) {
+        toast.error("You need to donate some non-zero amount", {
           position: "top-right",
           autoClose: 5000,
-          transition: Bounce
-        })
-      }
-      else
-      {
-        writeContract({
-          abi,
-          address: contractAddresses[chainId][0],
-          functionName: 'transferBond',
-          args: [
-            partyName,
-            amt
-          ],
-          value: amt
-        })
+          transition: Bounce,
+        });
+      } else {
+        await transfer();
       }
     }
   };

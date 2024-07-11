@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@pushprotocol/restapi": "^1.7.25",
     "cors": "^2.8.5",
+    "ethers": "5.7",
     "express": "^4.19.2",
     "mysql2": "^3.10.2"
   }

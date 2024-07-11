@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaEthereum } from "react-icons/fa";
+import { ethers } from "ethers";
 
 export default function BalanceModal({address, totalFunds, setIsBalance}) {
 
@@ -48,7 +49,7 @@ export default function BalanceModal({address, totalFunds, setIsBalance}) {
 
                 <div className="flex w-full items-center gap-2">
                     <p className="flex items-center gap-6 text-lg font-normal">
-                        Total Funds: {Number(totalFunds)}
+                        Total Funds: {parseFloat(ethers.formatEther(totalFunds)).toFixed(7)}
                     </p>
 
                     <p className="flex items-center">

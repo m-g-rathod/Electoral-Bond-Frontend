@@ -2,16 +2,25 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Advertise from "../components/Advertise";
 import DonateModal from "../components/DonateModal";
+import { useReadContract, useChainId } from "wagmi";
+import { contractAddresses, abi } from "../../constants";
 
 export default function Donate({ selectedPartyId }) {
   const { partyName } = useParams();
-
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [advertisements, setAdvertisements] = useState([]);
   const [isDonate, setIsDonate] = useState(false);
+  const [partyChannel, setPartyChannel] = useState('');
+  const chainId = useChainId();
+  const {data, refetch, error} = useReadContract({
+    abi,
+    address: contractAddresses[chainId][0],
+    functionName: 'getPartyChannel',
+    args: [partyName]
+  });
 
   useEffect(() => {
-    console.log(selectedPartyId);
+    // console.log(selectedPartyId);
     fetch(
       `http://127.0.0.1:5000/api/party/adv/${localStorage.getItem("partyId")}`,
       {
@@ -25,14 +34,30 @@ export default function Donate({ selectedPartyId }) {
         return res.json();
       })
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         setAdvertisements(res.result);
         setSelectedCategory(res.result[0].id);
       })
       .catch((err) => {
         console.log(err);
       });
+
+      // getPartyChannel();
   }, []);
+
+  useEffect(() => {
+    if(partyName.length > 0)
+    {
+      refetch();
+    }
+  }, [partyName]);
+
+  useEffect(() => {
+    if(data !== undefined)
+    {
+      setPartyChannel(data);
+    }
+  }, [data]);
 
   const getParty = () => {
     if (partyName === "bjp") return "Bhartiya Janata Party";
@@ -52,14 +77,14 @@ export default function Donate({ selectedPartyId }) {
       <div className="flex w-full justify-center mb-10">
         <button
           onClick={() => setIsDonate(true)}
-          className="bg-purple-600 rounded px-4 py-2 text-white font-medium"
+          className="bg-blue-900 text-white text-base font-semibold px-4 py-2 rounded-lg"
         >
           Donate
         </button>
       </div>
 
       {isDonate && (
-        <DonateModal setIsDonate={setIsDonate} partyName={partyName} />
+        <DonateModal setIsDonate={setIsDonate} partyName={partyName} partyChannel={partyChannel}/>
       )}
     </div>
   );

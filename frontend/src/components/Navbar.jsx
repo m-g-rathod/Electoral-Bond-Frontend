@@ -28,7 +28,7 @@ function Navbar({setIsBalance}) {
           <ConnectButton />
           {
             isAuth && 
-            <button onClick={() => setIsBalance(true)} className="px-3 py-2 bg-blue-800 rounded text-white font-medium cursor-pointer">Check Funds</button>
+            <button onClick={() => setIsBalance(true)} className="px-3 py-2 bg-blue-800 rounded-lg text-white font-medium cursor-pointer">Check Funds</button>
           }
           {!isAuth && <Link to="/login" className="px-3 py-2 bg-green-600 rounded-lg text-white font-medium cursor-pointer hover:no-underline">
             Login

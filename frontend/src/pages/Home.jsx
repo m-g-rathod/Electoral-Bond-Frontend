@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import AddAdvertise from "../components/AddAdvertise";
 import { FaArrowRight } from "react-icons/fa";
 import Advertise from "../components/Advertise";
-import { useReadContract, useChainId, useAccount, useWriteContract } from "wagmi";
+import { useReadContract, useChainId, useAccount, useWriteContract, useFeeData } from "wagmi";
 import { contractAddresses, abi } from "../../constants";
 import { Bounce, toast } from "react-toastify";
 import BalanceModal from "../components/BalanceModal";
+import RedeemModal from "../components/RedeemModal";
 
 export default function Home({isBalance, setIsBalance}) {
   const partyName = localStorage.getItem("party");
@@ -17,7 +18,8 @@ export default function Home({isBalance, setIsBalance}) {
   const [isMapped, setIsMapped] = useState(false);
   const chainId = useChainId();
   const account = useAccount();
-  const {writeContract, writeContractAsync, status} = useWriteContract();
+  const {writeContract, writeContractAsync, status, error} = useWriteContract();
+  const [isRedeem, setIsRedeem] = useState(false);
 
   const {refetch, data, isError, isFetched, isFetching, isLoading, isPending} = useReadContract({
     abi,
@@ -30,6 +32,13 @@ export default function Home({isBalance, setIsBalance}) {
     abi,
     address: contractAddresses[chainId][0],
     functionName: 'getPartyBalance',
+    args: [partyName]
+  });
+
+  const { data: partyChannel, refetch: channelRefetch } = useReadContract({
+    abi,
+    address: contractAddresses[chainId][0],
+    functionName: 'getPartyChannel',
     args: [partyName]
   });
 
@@ -94,19 +103,17 @@ export default function Home({isBalance, setIsBalance}) {
         transition: Bounce
       })
     }
+
+    // console.log(status);
   }, [status]);
 
   useEffect(() => {
-    console.log(data); 
+    // console.log(data); 
     if(data === undefined || data === '0x0000000000000000000000000000000000000000')
       setIsMapped(false);
     else
       setIsMapped(true);
   }, [data]);
-
-  useEffect(() => {
-    console.log(Number(partyBalance))
-  }, [partyBalance]);
 
   const mapAddress = async () => {
     try {
@@ -182,17 +189,17 @@ export default function Home({isBalance, setIsBalance}) {
             ) : (
               <>
                 <p className="text-lg font-normal ">Your wallet address is mapped. You will receive all the funds on the address {`${data.slice(0, 6)}....${data.slice(data.length - 4)}`}</p>
-                <button onClick={() => handleChangeAddress()} className="px-4 py-2 rounded bg-blue-800 text-white text-base font-medium">
+                <button onClick={() => handleChangeAddress()} className="px-4 py-2 rounded-lg bg-blue-800 text-white text-base font-medium">
                   Change address
                 </button>
               </>
             )
           }
         </div>
-        {/* <div className="flex w-full justify-center mt-5 items-center gap-5">
-          <p className="text-lg font-normal">Check your total funds collected through bonds here....</p>
-          <button onClick={() => setIsBalance(true)} className="px-3 py-2 bg-blue-800 rounded text-white font-medium cursor-pointer">Check Funds</button>
-        </div> */}
+        <div className="flex w-full justify-center mt-5 items-center gap-5">
+          <p className="text-lg font-normal">Redeem your funds here....</p>
+          <button onClick={() => setIsRedeem(true)} className="px-4 py-2 bg-purple-600 rounded-lg text-white font-medium cursor-pointer">Redeem Funds</button>
+        </div>
 
         <div className="flex mx-auto px-3 py-2 gap-3 bg-gray-200 w-fit rounded my-6">
           <button
@@ -243,6 +250,7 @@ export default function Home({isBalance, setIsBalance}) {
         {isSelected === 'adv' && advertisements.length > 0 && <Advertise advertisements={advertisements} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />}
 
         {isBalance && <BalanceModal address={data} totalFunds={partyBalance} setIsBalance={setIsBalance}/>}
+        {isRedeem && <RedeemModal setIsRedeem={setIsRedeem} totalFunds={partyBalance} connectedWalletAddr={data}/>}
       </div>
     </>
   );
